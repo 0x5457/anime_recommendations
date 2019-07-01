@@ -6,7 +6,8 @@ import pandas as pd
 
 file_path = os.path.abspath('./data/rating.csv')
 
-def get_train_data():
+
+def get_train_data(filter):
     if not os.path.isfile(file_path):
         data_zip = zipfile.ZipFile(os.path.abspath('./data/data.zip'))
         for file in data_zip.namelist():
@@ -14,6 +15,10 @@ def get_train_data():
         data_zip.close()
 
     data = pd.read_csv(file_path)
+
+    if filter:
+        data = filter(data)
+
     data['user_id'] = data['user_id'].astype(np.int32)
     data['anime_id'] = data['anime_id'].astype(np.int32)
     data['rating'] = data['rating'].astype(np.float32)

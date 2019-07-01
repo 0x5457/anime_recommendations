@@ -47,3 +47,6 @@ class Svd:
         cost = tf.add(cost_l2, tf.multiply(regularizer, penalty))
         train_op = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost, global_step=global_step)
         return cost, train_op
+
+
+
