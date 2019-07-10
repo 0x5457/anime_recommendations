@@ -2,3 +2,4 @@
 __MACOSX
 *.csv
 ckpt/*
+__pycache__
