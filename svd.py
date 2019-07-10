@@ -27,7 +27,7 @@ class Svd:
         bias_item = tf.nn.embedding_lookup(self.w_bias_item, item_batch, name="bias_item")
 
         embed_user = tf.nn.embedding_lookup(self.w_user, user_batch, name="embed_user")
-        embed_item = tf.nn.embedding_lookup(self.w_user, item_batch, name="embed_item")
+        embed_item = tf.nn.embedding_lookup(self.w_item, item_batch, name="embed_item")
 
         infer = tf.reduce_sum(tf.multiply(embed_item, embed_user), 1)
         infer = tf.add(infer, self.global_bias)

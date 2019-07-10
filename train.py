@@ -1,5 +1,6 @@
 import math
 import time
+
 import numpy as np
 import tensorflow as tf
 
@@ -27,6 +28,7 @@ global_step = tf.train.get_or_create_global_step()
 
 cost, train_op = svd.optimization(infer, regularizer, rate_batch)
 
+
 if __name__ == '__main__':
 
     with tf.Session() as sess:
@@ -35,10 +37,12 @@ if __name__ == '__main__':
         train_size = int(math.ceil(epoch * size / batch_size))
 
         for i in range(train_size):
+
             batch_data = util.random_batch(batch_size, data, size)
+
             feed_dict = {
-                user_batch: batch_data['user_id'],
-                item_batch: batch_data['anime_id'],
+                user_batch: util.user_to_inner_index(batch_data['user_id']),
+                item_batch: util.item_to_inner_index(batch_data['anime_id']),
                 rate_batch: batch_data['rating'],
             }
             pred_batch, _ = sess.run([infer, train_op], feed_dict=feed_dict)
@@ -46,5 +50,5 @@ if __name__ == '__main__':
             if i % 1000 == 0:
                 print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), 'loss: ' + str(loss))
 
-        save_path = tf.train.Saver().save(sess, "./ckpt", global_step=1)
+        save_path = tf.train.Saver(max_to_keep=1).save(sess, "./ckpt")
         print("Model saved in file: %s" % save_path)
