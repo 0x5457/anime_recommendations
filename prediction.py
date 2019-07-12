@@ -6,23 +6,6 @@ import tensorflow as tf
 
 import util
 
-
-def get_user_embedding(user_ids, sess):
-    return sess.run(tf.nn.embedding_lookup(sess.run("w_user:0"), user_ids))
-
-
-def get_user_bias(user_ids, sess):
-    return sess.run(tf.nn.embedding_lookup(sess.run("w_bias_user:0"), user_ids))
-
-
-def get_item_bias(item_ids, sess):
-    return sess.run(tf.nn.embedding_lookup(sess.run("w_bias_item:0"), item_ids))
-
-
-def get_item_embedding(item_ids, sess):
-    return sess.run(tf.nn.embedding_lookup(sess.run("w_item:0"), item_ids))
-
-
 item_ids = util.get_all_item_id()
 user_ids = util.get_all_user_id()
 
@@ -31,8 +14,8 @@ def export_user_recall(sess):
     with open("./user_recall.txt", "w+") as f:
         for user_id in list(user_ids):
             rates = sess.run('svd_inference:0', feed_dict={
-                'user_id:0': [user_id],
-                'item_id:0': item_ids
+                'user_id:0': util.user_to_inner_index([user_id], user_ids),
+                'item_id:0': util.item_to_inner_index(item_ids, item_ids)
             })
 
             sorted_index = np.argsort(-rates)
@@ -43,14 +26,51 @@ def export_user_recall(sess):
             f.write(str(user_id) + ',' + ','.join([str(item) for item in favorite_items[:100]]) + '\n')
 
 
+def export_user_best_sim(sess):
+    w_user = sess.run('w_user:0')
+    w_bias_user = sess.run('w_bias_user:0')
+
+    with open("./user_best_sim.txt", "w+") as f:
+        user_ids_list  = list(user_ids)
+        for i, current_user_id in enumerate(user_ids_list):
+            sim = []
+            for j, user_id in enumerate(user_ids_list):
+                current_wb = w_user[i] + w_bias_user[i]
+                user_wb = w_user[j] + w_bias_user[j]
+                sim.append({
+                    'user_id': user_id,
+                    'sim': util.cos_sim(current_wb, user_wb)
+                })
+            sim.sort(key=lambda item: item['sim'], reverse=True)
+
+            print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), 'user_id: ' + str(current_user_id))
+            f.write(','.join([str(item['user_id']) for item in sim[:101]]) + '\n')
+
+
+def export_item_best_sim(sess):
+    w_item = sess.run('w_item:0')
+    w_bias_item = sess.run('w_bias_item:0')
+
+    with open("./item_best_sim.txt", "w+") as f:
+        for i, current_item_id in enumerate(list(item_ids)):
+            sim = []
+
+            for j, item_id in enumerate(list(item_ids)):
+                current_wb = w_item[i] + w_bias_item[i]
+                item_wb = w_item[j] + w_bias_item[j]
+
+                sim.append({
+                    'item_id': item_id,
+                    'sim': util.cos_sim(current_wb, item_wb)
+                })
+
+            sim.sort(key=lambda item: item['sim'], reverse=True)
+
+            print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), 'item_id: ' + str(current_item_id))
+            f.write(','.join([str(item['item_id']) for item in sim[:101]]) + '\n')
+
+
 with tf.Session() as sess:
-    saver = tf.train.import_meta_graph(os.path.abspath('./ckpt/data-1.meta'))
-    saver.restore(sess, os.path.abspath('./ckpt/data-1'))
-    print(1)
-    user_embedding = get_user_embedding([1], sess)
-    user_bias = get_user_bias([1], sess)
-    # item_embedding = get_item_embedding(user_ids, sess)
-    # item_bias = get_item_bias(user_ids, sess)
-
-
-
+    saver = tf.train.import_meta_graph(os.path.abspath('./ckpt/data.meta'))
+    saver.restore(sess, os.path.abspath('./ckpt/data'))
+    export_user_best_sim(sess)

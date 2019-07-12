@@ -41,8 +41,8 @@ if __name__ == '__main__':
             batch_data = util.random_batch(batch_size, data, size)
 
             feed_dict = {
-                user_batch: util.user_to_inner_index(batch_data['user_id']),
-                item_batch: util.item_to_inner_index(batch_data['anime_id']),
+                user_batch: util.user_to_inner_index(batch_data['user_id'], data['user_id']),
+                item_batch: util.item_to_inner_index(batch_data['anime_id'], data['user_id']),
                 rate_batch: batch_data['rating'],
             }
             pred_batch, _ = sess.run([infer, train_op], feed_dict=feed_dict)

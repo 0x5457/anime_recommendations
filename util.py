@@ -3,27 +3,23 @@ import zipfile
 
 import numpy as np
 import pandas as pd
-from numpy import linalg as la
-
-
-# 相似度计算函数
-# 欧氏距离
-def euclid_sim(a, b):
-    return 1. / (1. + la.norm(a - b))
-
-
-# 皮尔逊相关系数
-def pears_sim(a, b):
-    if len(a) < 3:
-        return 1.
-    return 0.5 + 0.5 * np.corrcoef(a, b, rowvar=False)[0][1]
 
 
 # 余弦相似度
-def cos_sim(a, b):
-    num = float(a.T * b)
-    denom = la.norm(a) * la.norm(b)
-    return 0.5 + 0.5 * (num / denom)
+def cos_sim(vector_a, vector_b):
+    """
+    计算两个向量之间的余弦相似度
+    :param vector_a: 向量 a
+    :param vector_b: 向量 b
+    :return: sim
+    """
+    vector_a = np.mat(vector_a)
+    vector_b = np.mat(vector_b)
+    num = float(vector_a * vector_b.T)
+    denom = np.linalg.norm(vector_a) * np.linalg.norm(vector_b)
+    cos = num / denom
+    sim = 0.5 + 0.5 * cos
+    return sim
 
 
 def get_train_data(filter):

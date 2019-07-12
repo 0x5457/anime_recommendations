@@ -3,3 +3,4 @@ __MACOSX
 *.csv
 ckpt/*
 __pycache__
+*.txt
